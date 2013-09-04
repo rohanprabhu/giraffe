@@ -10,6 +10,7 @@ class GiraffeHandler:
 	def __init__(self):
 		self.ds = DataStore()
 		self.dividely = DividelyManager()
+		self.ds.connect()
 
 	@classmethod
 	def add_expense(self, user, title, bills, date):

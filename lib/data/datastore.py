@@ -13,6 +13,7 @@ class DataStore:
 
     @classmethod
     def connect(self):
+    	logging.debug("Connecting to MongoDb [%s:%d//%s]" % (self.db_conf["host"], self.db_conf["port"], self.db_conf["name"]))
         self.connection = MongoClient(host=self.db_conf["host"], port=self.db_conf["port"])
         self.db = self.connection[self.db_conf["name"]]
 
@@ -37,7 +38,7 @@ class DataStore:
         self.db["users"].drop()
 
     @classmethod
-    def get_friends_list(self, user):
+    def get_friends_list(self, user, short_codes):
         logging.debug("Getting friends for user %s" % user)
         users = self.db["users"]
         friend_list = users.find_one({"user": user}, {"friends": True})
@@ -50,16 +51,17 @@ class DataStore:
         ret = []
 
         for friend in friend_list["friends"]:
-            ret.append(friend)
+            if(friend["short_code"] in short_codes):
+                ret.append(friend["email"])
 
         return ret
 
     @classmethod
-    def add_friend(self, user, friend):
+    def add_friend(self, user, friend, short_code):
         logging.debug("Adding friend for user")
         users = self.db["users"]
 
-        users.update({"user": user}, {"$addToSet": {"friends": friend}}, True, False)
+        users.update({"user": user}, {"$addToSet": {"friends": {"email": friend, "short_code": short_code}}}, True, False)
         logging.debug("Added friend [%s] for user [%s]" % (friend, user))
 
     @classmethod
