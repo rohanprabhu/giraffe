@@ -25,6 +25,7 @@ x = RequestHelper.postCall(
 print x
 '''
 
+'''
 from lib.dividely.dividelymanager import DividelyManager
 from lib.dividely.credentials import Credentials
 
@@ -36,3 +37,14 @@ logging.basicConfig(level='DEBUG')
 
 dm.add_expense(Credentials(username="divtext_test@rohanprabhu.com", password="divtext_test"),
 	"Attempting from script :)", [("text2dividely@live.com", 1102)], "09/04/2013")
+'''
+
+from lib.data.datastore import DataStore
+
+ds = DataStore()
+ds.connect()
+
+print ds.get_friends_list("rohan")
+ds.add_friend("rohan", "nevermore")
+print ds.get_friends_list("rohan")
+ds.disconnect()
