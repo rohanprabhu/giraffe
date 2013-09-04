@@ -17,14 +17,39 @@ class DataStore:
         self.db = self.connection[self.db_conf["name"]]
 
     @classmethod
+    def set_credentials(self, user, username, password):
+        logging.debug("Setting credentials for %s" % user)
+        users = self.db["users"]
+        users.update({"user": user}, {"$set": {"username": username, "password": password}}, True)
+        logging.debug("Set credentials for %s" % username)
+
+    @classmethod
+    def get_credentials(self, user):
+        logging.debug("Getting credentials for %s" % user)
+        users = self.db["users"]
+        user = users.find_one({"user": user}, {"username": True, "password": True})
+
+        if(user is not None):
+            return user["username"], user["password"]
+
+    @classmethod
+    def delete_all(self):
+        self.db["users"].drop()
+
+    @classmethod
     def get_friends_list(self, user):
         logging.debug("Getting friends for user %s" % user)
-        friends = self.db["friends"]
-        friend_list = friends.find({"user": user})
+        users = self.db["users"]
+        friend_list = users.find_one({"user": user}, {"friends": True})
+
+        if(friend_list is None):
+            return []
+        else:
+            print 
 
         ret = []
 
-        for friend in friend_list:
+        for friend in friend_list["friends"]:
             ret.append(friend)
 
         return ret
@@ -32,11 +57,11 @@ class DataStore:
     @classmethod
     def add_friend(self, user, friend):
         logging.debug("Adding friend for user")
-        friends = self.db["friends"]
+        users = self.db["users"]
 
-        friends.update({"user": user}, {"$addToSet": {"friends": friend}}, True, False)
+        users.update({"user": user}, {"$addToSet": {"friends": friend}}, True, False)
         logging.debug("Added friend [%s] for user [%s]" % (friend, user))
 
     @classmethod
     def disconnect(self):
-    	self.connection.disconnect()
+        self.connection.disconnect()
