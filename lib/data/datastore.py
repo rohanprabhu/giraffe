@@ -30,11 +30,14 @@ class DataStore:
         users = self.db["users"]
         user = users.find_one({"user": user}, {"username": True, "password": True})
 
-        if(user is not None):
+        if(user is not None and "username" in user and "password" in user):
             return user["username"], user["password"]
+        else:
+            return None, None
 
     @classmethod
     def delete_all(self):
+        logging.debug("Wiping off `users` collectino from DB")
         self.db["users"].drop()
 
     @classmethod
@@ -52,7 +55,7 @@ class DataStore:
 
         for friend in friend_list["friends"]:
             if(friend["short_code"] in short_codes):
-                ret.append(friend["email"])
+                ret.append(friend)
 
         return ret
 
@@ -66,4 +69,5 @@ class DataStore:
 
     @classmethod
     def disconnect(self):
+        logging.debug("Disconnecting from [%s:%s//%s]" % (self.db_conf["host"], self.db_conf["port"], self.db_conf["name"]))
         self.connection.disconnect()

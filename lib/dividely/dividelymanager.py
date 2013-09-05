@@ -1,6 +1,7 @@
 import urllib, urllib2, cookielib
 import logging
 import time
+import re
 
 from bs4 import BeautifulSoup
 
@@ -15,7 +16,8 @@ class DividelyManager:
         "login": "https://dividely.com/session",
         "split": "https://dividely.com/split",
         "bills": "https://dividely.com/bills",
-        "logout": "https://dividely.com/logout"
+        "logout": "https://dividely.com/logout",
+        "friends": "https://dividely.com/friends"
     }
 
     @classmethod
@@ -77,6 +79,47 @@ class DividelyManager:
         logging.debug("Logging out")
         self.opener.open(self.urls["logout"])
         logging.debug("Logout request made")
+
+    @classmethod
+    def get_accounts(self, credentials):
+        logging.debug("Getting accounts")
+        pattern = "[+-]?[0-9]{1,3}(?:,?[0-9]{3})*(?:\.[0-9]{2})"
+        self.login(credentials)
+        resp = self.opener.open(self.urls["friends"])
+
+        soup = BeautifulSoup(resp.read())
+        data_cells = soup.findAll('td', attrs = {'class': 'ce'})
+
+        logging.debug("Got accounts with %d friends" % (len(data_cells)/3))
+        accounts = [None] * (len(data_cells)/3)
+        index = 0
+
+        for data_cell in data_cells:
+            if index%3 == 0:
+                accounts[index/3] = {}
+
+                try:
+                    accounts[index/3]["friend"] = self.innerHTML(data_cell.find('a')).strip()
+                except:
+                    accounts[index/3]["friend"] = ""
+            elif index%3 == 1:
+                try:
+                    message = self.innerHTML(data_cell)
+                    accounts[index/3]["direction"] = "owe"
+
+                    if(message.find("You owe") != -1):
+                        accounts[index/3]["direction"] = "collect"
+
+                    accounts[index/3]["amount"] = re.findall(pattern, message)[0].strip()
+                except:
+                    accounts[index/3]["amount"] = ""
+                    accounts[index/3]["direction"] = ""
+
+
+            index = index + 1
+
+        self.logout()
+        return accounts
 
     @classmethod
     def add_expense(self, credentials, title, bills, date):
