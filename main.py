@@ -38,12 +38,12 @@ def update_expense(mobile_hash):
                 for account in accounts:
                     if account["direction"] == "owe":
                         total_amount -= float(''.join(re.findall("[0-9\.]+", account["amount"])))
-                        message += "%s: pay %s\n" % (account["friend"], account["amount"])
+                        message += "%s: pay %s<br />" % (account["friend"], account["amount"])
                     else:
                         total_amount += float(''.join(re.findall("[0-9\.]+", account["amount"])))
-                        message += "%s: collect %s\n" % (account["friend"], account["amount"])
+                        message += "%s: collect %s<br />" % (account["friend"], account["amount"])
 
-                send_back = ("net: %s\n\n" % total_amount) + message
+                send_back = ("net: %s<br /><br />" % total_amount) + message
             except Exception as e:
                 logging.debug("Could not fetch accounts %s" % e)
                 send_back = "Could not get accounts"
