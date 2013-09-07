@@ -5,6 +5,8 @@ import re
 
 from bs4 import BeautifulSoup
 
+from decimal import *
+
 class DividelyManager:
     access_token = None
     opener = None
@@ -13,11 +15,11 @@ class DividelyManager:
 
     urls = {
         "mainpage": "https://dividely.com",
-        "login": "https://dividely.com/session",
-        "split": "https://dividely.com/split",
-        "bills": "https://dividely.com/bills",
-        "logout": "https://dividely.com/logout",
-        "friends": "https://dividely.com/friends"
+        "login"   : "https://dividely.com/session",
+        "split"   : "https://dividely.com/split",
+        "bills"   : "https://dividely.com/bills",
+        "logout"  : "https://dividely.com/logout",
+        "friends" : "https://dividely.com/friends"
     }
 
     @classmethod
@@ -94,6 +96,10 @@ class DividelyManager:
         accounts = [None] * (len(data_cells)/3)
         index = 0
 
+        # I am so NOT proud of the upcoming lines.
+        # To those who know me, I am sorry
+        # To those who don't, let's keep it that way
+        #    -rohan
         for data_cell in data_cells:
             if index%3 == 0:
                 accounts[index/3] = {}
@@ -125,7 +131,7 @@ class DividelyManager:
     def add_expense(self, credentials, title, bills, date):
         self.login(credentials)
         logging.debug("Adding expense")
-        total_amount = 0
+        total_amount = Decimal(0)
         usernumbers = self.get_user_numbers()
         authenticity = self.get_authenticity_token(form_action = '/bills',
             url = self.urls["split"])
@@ -145,12 +151,12 @@ class DividelyManager:
         req.append(("authenticity_token", authenticity))
 
         for bill in bills:
-            total_amount += bill[1]
+            total_amount += bill[0]
 
-            if(bill[0] not in usernumbers):
-                raise ValueError("User not added %s" % bill[0])
+            if(bill[1] not in usernumbers):
+                raise ValueError("User not added %s" % bill[1])
 
-            add_bills.append((usernumbers[bill[0]], bill[1]))
+            add_bills.append((usernumbers[bill[1]], bill[0]))
 
         for add_bill in add_bills:
             req.append(("friend[]", add_bill[0]))
@@ -158,6 +164,8 @@ class DividelyManager:
             req.append(("friend_%s_spl" % add_bill[0], "even"))
 
         req.append(("amount", total_amount))
+
+        logging.debug("Making request %s" % repr(req))
 
         req_data = urllib.urlencode(req)
 

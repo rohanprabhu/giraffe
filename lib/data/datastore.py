@@ -37,7 +37,7 @@ class DataStore:
 
     @classmethod
     def delete_all(self):
-        logging.debug("Wiping off `users` collectino from DB")
+        logging.debug("Wiping off `users` collection from DB")
         self.db["users"].drop()
 
     @classmethod

@@ -1,10 +1,9 @@
 
 class GiraffeRequest:
-
     def __init__(self, mobile_identifier, body):
         self.mobile_identifier = mobile_identifier
         self.body = body
-        split_body(self)
+        self.split_body()
 
     def dump_request(self):
         return "Mobile Identifier: " + self.mobile_identifier + " | Body: " + self.body
