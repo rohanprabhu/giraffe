@@ -12,8 +12,10 @@ class GiraffeRequest:
         try:
             parameters = self.body.split(' ', 2)
             self.title = parameters[0]
-            self.amount = parameters[1]
-            self.user = parameters[2]
-            self.users = self.user.split(' ')
+
+            if len(parameters) == 3:
+                self.amount = parameters[1]
+                self.user = parameters[2]
+                self.users = self.user.split(' ')
         except:
             raise ValueError("Error in parsing the body in GiraffeRequest")

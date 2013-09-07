@@ -111,10 +111,10 @@ class DividelyManager:
             elif index%3 == 1:
                 try:
                     message = self.innerHTML(data_cell)
-                    accounts[index/3]["direction"] = "owe"
+                    accounts[index/3]["direction"] = "collect"
 
                     if(message.find("You owe") != -1):
-                        accounts[index/3]["direction"] = "collect"
+                        accounts[index/3]["direction"] = "owe"
 
                     accounts[index/3]["amount"] = re.findall(pattern, message)[0].strip()
                 except:

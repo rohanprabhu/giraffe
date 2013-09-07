@@ -60,8 +60,17 @@ class GiraffeHandler:
     @classmethod
     def get_accounts(self, user):
         username, password = self.ds.get_credentials(user)
+        friends = self.ds.get_friends_list(user, None)
+        name_map = {x["email"]: x["name"] for x in friends}
 
-        return self.dividely.get_accounts(Credentials(username, password))
+        accounts = self.dividely.get_accounts(Credentials(username, password))
+        accounts_final = []
+
+        for account in accounts:
+        	account["friend"] = name_map[account["friend"]]
+        	accounts_final.append(account)
+
+        return accounts_final
 
     @classmethod
     def __del__(self):

@@ -8,6 +8,7 @@ from girafferequest import GiraffeRequest
 from decimal import *
 
 import logging
+import re
 
 app = Flask(__name__)
 
@@ -22,27 +23,45 @@ def update_expense(mobile_hash):
     logging.debug("Got message `%s` for hash `%s`" % (mobile_hash, message))
 
     result = False
+    send_back = None
 
     try:
         gr = GiraffeRequest(mobile_hash, message)
 
-        # TODO: Figure out how to remove this hack ASAP
-        gr.users.append("You")
+        # Awesome. Another hack!!! Fucking get rid of this.
+        if gr.title.lower() == "account":
+            try:
+                accounts = giraffe.get_accounts(user=mobile_hash)
+                message = ""
+                total_amount = 0.0
 
-        bills = [((Decimal(gr.amount)/len(gr.users)).quantize(Decimal(10) ** -2), x) for x in gr.users]
+                for account in accounts:
+                    if account["direction"] == "owe":
+                        total_amount -= float(''.join(re.findall("[0-9\.]+", account["amount"])))
+                        message += "%s: pay %s\n" % (account["friend"], account["amount"])
+                    else:
+                        total_amount += float(''.join(re.findall("[0-9\.]+", account["amount"])))
+                        message += "%s: collect %s\n" % (account["friend"], account["amount"])
 
-        result = giraffe.add_expense(
-            user=mobile_hash,
-            title=gr.title,
-            bills=bills)
-    except:
+                send_back = ("net: %s\n\n" % total_amount) + message
+            except Exception as e:
+                logging.debug("Could not fetch accounts %s" % e)
+                send_back = "Could not get accounts"
+        else:
+            # TODO: Figure out how to remove this hack ASAP
+            gr.users.append("You")
+
+            bills = [((Decimal(gr.amount)/len(gr.users)).quantize(Decimal(10) ** -2), x) for x in gr.users]
+
+            result = giraffe.add_expense(
+                user=mobile_hash,
+                title=gr.title,
+                bills=bills)
+
+            send_back = "Succesfully added expense %s (%s)" % (gr.title, str(Decimal(gr.amount)))
+    except Exception as e:
+        logging.debug("Request failed %s" % e)
         result = False
-
-    send_back = None
-
-    if(result is True):
-        send_back = "Succesfully added expense %s (%s)" % (gr.title, str(Decimal(gr.amount)))
-    else:
         send_back = "Could not add expense. Something's wrong :("
 
     response = '<html><head><meta name="txtweb-appkey" content="%s" /></head><body>%s</body></html>'

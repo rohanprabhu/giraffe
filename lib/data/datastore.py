@@ -41,7 +41,7 @@ class DataStore:
         self.db["users"].drop()
 
     @classmethod
-    def get_friends_list(self, user, short_codes):
+    def get_friends_list(self, user, short_codes = None):
         logging.debug("Getting friends for user %s" % user)
         users = self.db["users"]
         friend_list = users.find_one({"user": user}, {"friends": True})
@@ -54,17 +54,17 @@ class DataStore:
         ret = []
 
         for friend in friend_list["friends"]:
-            if(friend["short_code"] in short_codes):
+            if((short_codes is None) or (friend["short_code"] in short_codes)):
                 ret.append(friend)
 
         return ret
 
     @classmethod
-    def add_friend(self, user, friend, short_code):
+    def add_friend(self, user, friend, name, short_code):
         logging.debug("Adding friend for user")
         users = self.db["users"]
 
-        users.update({"user": user}, {"$addToSet": {"friends": {"email": friend, "short_code": short_code}}}, True, False)
+        users.update({"user": user}, {"$addToSet": {"friends": {"email": friend, "name": name, "short_code": short_code}}}, True, False)
         logging.debug("Added friend [%s] for user [%s]" % (friend, user))
 
     @classmethod
