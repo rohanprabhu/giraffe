@@ -19,14 +19,21 @@ service_key = "8dde4af5-495b-4ef3-a934-bdb502cd9c24"
 @app.route('/<mobile_hash>/')
 def update_expense(mobile_hash):
     message = request.args.get('m')
-    gr = GiraffeRequest(mobile_hash, message)
+    logging.debug("Got message `%s` for hash `%s`" % (mobile_hash, message)
 
-    bills = [((Decimal(gr.amount)/len(gr.users)).quantize(Decimal(10) ** -2), x) for x in gr.users]
+    result = False
 
-    result = giraffe.add_expense(
-        user=mobile_hash,
-        title=gr.title,
-        bills=bills)
+    try:
+        gr = GiraffeRequest(mobile_hash, message)
+
+        bills = [((Decimal(gr.amount)/len(gr.users)).quantize(Decimal(10) ** -2), x) for x in gr.users]
+
+        result = giraffe.add_expense(
+            user=mobile_hash,
+            title=gr.title,
+            bills=bills)
+    except:
+        result = False
 
     send_back = None
 
