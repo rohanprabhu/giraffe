@@ -19,7 +19,7 @@ service_key = "8dde4af5-495b-4ef3-a934-bdb502cd9c24"
 @app.route('/<mobile_hash>/')
 def update_expense(mobile_hash):
     message = request.args.get('m')
-    logging.debug("Got message `%s` for hash `%s`" % (mobile_hash, message)
+    logging.debug("Got message `%s` for hash `%s`" % (mobile_hash, message))
 
     result = False
 
