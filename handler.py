@@ -34,8 +34,8 @@ class GiraffeHandler:
             credentials = Credentials(username, password)
             short_codes = [x[1] for x in bills]
             friends_list = self.ds.get_friends_list(user, short_codes)
-            _x = [x for x in friends_list]
             emails = {x["short_code"]: x["email"] for x in friends_list}
+            emails["You"] = "You"
 
             bill_objects = []
 

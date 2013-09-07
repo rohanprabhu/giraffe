@@ -26,6 +26,9 @@ def update_expense(mobile_hash):
     try:
         gr = GiraffeRequest(mobile_hash, message)
 
+        # TODO: Figure out how to remove this hack ASAP
+        gr.users.append("You")
+
         bills = [((Decimal(gr.amount)/len(gr.users)).quantize(Decimal(10) ** -2), x) for x in gr.users]
 
         result = giraffe.add_expense(
